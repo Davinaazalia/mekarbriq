@@ -784,10 +784,22 @@ export async function setupAdminDashboard(): Promise<void> {
   await loadGroupProfile();
   await refreshDocuments();
 
-  await Promise.all([refreshProducts(), refreshArticles()]);
+  
 
   // Pulihkan panel berdasarkan hash, jika pengguna membuka tautan menu tertentu.
+// Pulihkan panel berdasarkan hash SEBELUM memuat data
   const initialView = window.location.hash.replace('#', '');
-  const initialLink = document.querySelector<HTMLAnchorElement>(`.admin-menu[data-view="${initialView}"]`);
-  if (initialLink) initialLink.click();
-}
+
+  const initialLink = document.querySelector<HTMLAnchorElement>(
+    `.admin-menu[data-view="${initialView}"]`
+  );
+
+  if (initialLink) {
+    initialLink.click();
+  }
+
+  // Muat data setelah panel yang benar ditampilkan
+  await Promise.all([
+    refreshProducts(),
+    refreshArticles()
+  ])};
