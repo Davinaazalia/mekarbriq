@@ -77,7 +77,7 @@ export async function Education(): Promise<string> {
           errorMessage
             ? `<p>${escapeHtml(errorMessage)}</p>`
             : topics.length > 0
-              ? topics.map((topic, index) => `
+              ? topics.map((topic) => `
                 <article class="article-card">
                   <div class="article-image">
                     ${
