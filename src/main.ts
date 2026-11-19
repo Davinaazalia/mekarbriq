@@ -22,9 +22,6 @@ import {
 import { supabase } from './lib/supabase';
 import DOMPurify from 'dompurify';
 
-// Base path untuk GitHub Pages
-page.base('/mekarbriq');
-
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
 // Mengamankan teks sebelum dimasukkan ke HTML
@@ -54,6 +51,9 @@ function renderAdmin(content: string) {
   app.innerHTML = content;
   window.scrollTo(0, 0);
 }
+
+// Base path untuk GitHub Pages
+page.base('/mekarbriq');
 
 // ================================
 // HALAMAN PENGUNJUNG
