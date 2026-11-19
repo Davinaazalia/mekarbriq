@@ -22,6 +22,9 @@ import {
 import { supabase } from './lib/supabase';
 import DOMPurify from 'dompurify';
 
+// Base path untuk GitHub Pages
+page.base('/mekarbriq');
+
 const app = document.querySelector<HTMLDivElement>('#app')!;
 
 // Mengamankan teks sebelum dimasukkan ke HTML
@@ -59,6 +62,9 @@ function renderAdmin(content: string) {
 page('/', async () => {
   render(await Home());
 });
+
+
+
 
 page('/profil', async () => {
   render(await Profile());

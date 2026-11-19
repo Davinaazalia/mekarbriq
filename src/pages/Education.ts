@@ -1,6 +1,7 @@
 
 import { supabase } from '../lib/supabase';
 import DOMPurify from 'dompurify';
+import edukasiHero from '../images/edukasi-hero.png';
 
 interface Article {
   id: string;
@@ -60,7 +61,13 @@ export async function Education(): Promise<string> {
           dan pengenalan briket biocarbon.
         </p>
       </div>
-      <div class="education-hero-art">🌱</div>
+   
+      <div class="catalog-hero-decoration">
+        <img
+          src="${edukasiHero}"
+          alt="Dua varian produk ECO-CARBON: Original kotoran sapi dan Blend ampas kopi serta sekam padi"
+        >
+      </div>
     </section>
 
     <section class="education-content">
