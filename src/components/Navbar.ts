@@ -15,10 +15,10 @@ export function Navbar() {
       </a>
 
       <nav class="nav-links">
-        <a href="/" data-link>Beranda</a>
-        <a href="/profil" data-link>Profil</a>
-        <a href="/katalog" data-link>Katalog</a>
-        <a href="/edukasi" data-link>Edukasi</a>
+        <a href="/mekarbriq/" data-link>Beranda</a>
+        <a href="/mekarbriq/profil" data-link>Profil</a>
+        <a href="/mekarbriq/katalog" data-link>Katalog</a>
+        <a href="/mekarbriq/edukasi" data-link>Edukasi</a>
       </nav>
 
       <a href="/katalog" class="nav-button" data-link>
