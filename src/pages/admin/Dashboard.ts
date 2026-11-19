@@ -306,7 +306,7 @@ export async function setupAdminDashboard(): Promise<void> {
         profil: 'Profil Kelompok', dokumentasi: 'Dokumentasi'
       };
       pageTitle.textContent = labels[view] ?? 'Dashboard';
-      window.location.hash = view;
+      
     });
   });
 
