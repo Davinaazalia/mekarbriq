@@ -1,26 +1,55 @@
 
-const topics = [
-  {
-    category: "LINGKUNGAN",
-    title: "Mengenal Limbah Peternakan",
-    description: "Memahami jenis limbah peternakan dan potensi pengelolaannya.",
-    image: "/images/edukasi-limbah.jpg"
-  },
-  {
-    category: "PRODUK",
-    title: "Apa Itu Briket Biocarbon?",
-    description: "Mengenal pengertian, karakteristik, dan pemanfaatan briket biocarbon.",
-    image: "/images/edukasi-briket.jpg"
-  },
-  {
-    category: "PEMANFAATAN",
-    title: "Potensi Pemanfaatan Limbah",
-    description: "Mempelajari bagaimana limbah dapat dimanfaatkan menjadi produk bernilai guna.",
-    image: "/images/edukasi-pemanfaatan.jpg"
-  }
-];
+import { supabase } from '../lib/supabase';
+import DOMPurify from 'dompurify';
 
-export function Education() {
+interface Article {
+  id: string;
+  title: string;
+  category: string;
+  content: string;
+  image_url: string | null;
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char] ?? char);
+}
+
+// Ringkasan kartu edukasi dibatasi agar tinggi kartu tetap rapi.
+function limitWords(value: string, maxWords: number): string {
+  const plainText = DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
+    .replace(/\\s+/g, ' ')
+    .trim();
+
+  const words = plainText.split(' ').filter(Boolean);
+  return words.length > maxWords
+    ? `${words.slice(0, maxWords).join(' ')}...`
+    : plainText;
+}
+
+export async function Education(): Promise<string> {
+  let topics: Article[] = [];
+  let errorMessage = '';
+
+  try {
+    const { data, error } = await supabase
+      .from('articles')
+      .select('id, title, category, content, image_url')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    topics = data ?? [];
+  } catch (error) {
+    console.error('Gagal mengambil artikel edukasi:', error);
+    errorMessage = 'Artikel belum dapat dimuat. Silakan coba kembali.';
+  }
+
   return `
     <section class="education-hero">
       <div>
@@ -40,27 +69,42 @@ export function Education() {
           <span class="eyebrow">ARTIKEL & INFORMASI</span>
           <h2>Jelajahi <span>Topik Edukasi</span></h2>
         </div>
-        <p>Informasi untuk mengenal potensi sumber daya lokal.</p>
+        
       </div>
 
       <div class="article-grid">
-        ${topics.map((topic, index) => `
-          <article class="article-card">
-            <div class="article-image">
-              <img src="${topic.image}"
-                alt="${topic.title}"
-                onerror="this.style.display='none'">
-            </div>
-            <div class="article-body">
-              <span class="article-category">${topic.category}</span>
-              <h3>${topic.title}</h3>
-              <p>${topic.description}</p>
-              <a href="#artikel-${index + 1}" class="text-link">
-                Baca selengkapnya →
-              </a>
-            </div>
-          </article>
-        `).join("")}
+        ${
+          errorMessage
+            ? `<p>${escapeHtml(errorMessage)}</p>`
+            : topics.length > 0
+              ? topics.map((topic, index) => `
+                <article class="article-card">
+                  <div class="article-image">
+                    ${
+                      topic.image_url
+                        ? `<img
+                            src="${escapeHtml(topic.image_url)}"
+                            alt="${escapeHtml(topic.title)}"
+                            onerror="this.style.display='none'"
+                          >`
+                        : ''
+                    }
+                  </div>
+
+                  <div class="article-body">
+                    <span class="article-category">
+                      ${escapeHtml(topic.category)}
+                    </span>
+                    <h3>${escapeHtml(topic.title)}</h3>
+                    <p>${escapeHtml(limitWords(topic.content, 32))}</p>
+                    <a href="/edukasi/${topic.id}" class="text-link">
+                    Baca selengkapnya →
+                    </a>
+                  </div>
+                </article>
+              `).join('')
+              : '<p>Belum ada artikel edukasi.</p>'
+        }
       </div>
     </section>
 
@@ -73,6 +117,7 @@ export function Education() {
           berdasarkan informasi dan proses nyata dari mitra.
         </p>
       </div>
+
       <div class="process-note">
         <span>♻</span>
         <h3>Belajar, memahami, dan memanfaatkan.</h3>

@@ -1,43 +1,112 @@
+import { supabase } from '../lib/supabase';
 
-export function Profile() {
+interface GroupProfile {
+  id: number;
+  name: string;
+  intro: string;
+  history: string | null;
+  vision: string | null;
+  mission: string | null;
+  address: string | null;
+  hero_image: string | null;
+  group_image: string | null;
+}
+
+interface GroupDocument {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string;
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char] ?? char);
+}
+// Membatasi jumlah kata pada kartu dokumentasi
+function limitWords(value: string, maxWords: number): string {
+  const words = value.trim().split(/\s+/);
+
+  if (!value.trim()) return '';
+  if (words.length <= maxWords) return value;
+
+  return words.slice(0, maxWords).join(' ') + '...';
+}
+
+export async function Profile(): Promise<string> {
+  let profile: GroupProfile | null = null;
+  let documents: GroupDocument[] = [];
+
+  try {
+    const { data, error } = await supabase.from('group_profile')
+      .select('id,name,intro,history,vision,mission,address,hero_image,group_image')
+      .eq('id', 1).maybeSingle();
+    if (error) throw error;
+    profile = data as GroupProfile | null;
+  } catch (error) {
+    console.error('Gagal memuat profil kelompok:', error);
+  }
+
+  try {
+    const { data, error } = await supabase.from('group_documentation')
+      .select('id,title,description,image_url')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    documents = (data ?? []) as GroupDocument[];
+  } catch (error) {
+    console.error('Gagal memuat dokumentasi kelompok:', error);
+  }
+
+  const name = profile?.name || 'Kelompok Tani Ternak Mekar Sari 1';
+  const intro = profile?.intro || 'Mengenal lebih dekat kelompok, potensi lokal, dan pengembangan produk briket biocarbon.';
+  const history = profile?.history || 'Kelompok Tani Ternak Mekar Sari 1 berlokasi di Kelurahan Mangunsari, Kecamatan Gunungpati, Kota Semarang.';
+  const address = profile?.address || 'Kelurahan Mangunsari, Kecamatan Gunungpati, Kota Semarang, Jawa Tengah.';
+  const missions = (profile?.mission || '').split('\n').map((item) => item.trim()).filter(Boolean);
+
   return `
     <section class="profile-hero">
       <div class="profile-hero-content">
         <span class="eyebrow">TENTANG KAMI</span>
-        <h1>Mengenal Kelompok Tani Ternak <span>Mekar Sari 1</span></h1>
-        <p>
-          Mengenal lebih dekat kelompok, potensi lokal,
-          dan pengembangan produk briket biocarbon.
-        </p>
+        <h1>Mengenal Kelompok Tani Ternak <span>${escapeHtml(name)}</span></h1>
+        <p>${escapeHtml(intro)}</p>
         <a href="#mengenal" class="btn-primary">Kenali Kelompok Kami ↓</a>
       </div>
       <div class="profile-hero-image">
-        <img src="/images/profil-kelompok.jpg"
-          alt="Dokumentasi Kelompok Tani Ternak Mekar Sari 1"
-          onerror="this.style.display='none'">
-        <span>Kelompok Tani Ternak Mekar Sari 1</span>
+        ${profile?.hero_image ? `<img src="${escapeHtml(profile.hero_image)}" alt="Foto profil ${escapeHtml(name)}">` : `<img src="/images/profil-kelompok.jpg" alt="Dokumentasi kelompok" onerror="this.style.display='none'">`}
+        <span>${escapeHtml(name)}</span>
       </div>
     </section>
 
-    <section class="profile-about" id="mengenal">
-      <div class="profile-about-label">
-        <span class="eyebrow">MENGENAL KAMI</span>
-        <h2>Berawal dari potensi lokal, berkembang melalui inovasi.</h2>
-      </div>
-      <div class="profile-about-text">
-        <p>
-          Kelompok Tani Ternak Mekar Sari 1 berlokasi di
-          Kelurahan Mangunsari, Kecamatan Gunungpati,
-          Kota Semarang.
-        </p>
-        <p>
-          Melalui pengembangan MEKARBRIQ, kelompok diperkenalkan
-          melalui media digital yang memuat informasi profil,
-          katalog produk briket biocarbon, dan edukasi
-          pemanfaatan limbah.
-        </p>
-      </div>
-    </section>
+<section class="profile-about" id="mengenal">
+  <div class="profile-about-image">
+    ${
+      profile?.group_image
+        ? `
+          <img
+            src="${escapeHtml(profile.group_image)}"
+            alt="Kegiatan Kelompok Tani Ternak Mekar Sari 1"
+          >
+        `
+        : `
+          <div class="profile-image-placeholder">
+            Foto kelompok belum tersedia
+          </div>
+        `
+    }
+  </div>
+
+  <div class="profile-about-content">
+    <span class="eyebrow">MENGENAL KAMI</span>
+
+    <h2>Berawal dari potensi lokal,
+      <span>berkembang melalui inovasi.</span>
+    </h2>
+
+    <p>${escapeHtml(history)}</p>
+    <p>${escapeHtml(intro)}</p>
+  </div>
+</section>
 
     <section class="profile-values">
       <div class="section-heading">
@@ -45,22 +114,21 @@ export function Profile() {
         <h2>Mengenal lebih dekat <span>perjalanan kami.</span></h2>
         <p>Informasi mengenai kelompok yang dapat diperbarui oleh pengelola.</p>
       </div>
-
       <div class="value-grid">
         <article class="value-card">
           <span class="value-number">01</span>
           <h3>Profil Kelompok</h3>
-          <p>Informasi sejarah, latar belakang, dan kegiatan kelompok.</p>
+          <p>${escapeHtml(history)}</p>
         </article>
         <article class="value-card">
           <span class="value-number">02</span>
-          <h3>Potensi Lokal</h3>
-          <p>Potensi peternakan dan pemanfaatan sumber daya di lingkungan kelompok.</p>
+          <h3>Visi</h3>
+          <p>${escapeHtml(profile?.vision || 'Informasi visi kelompok belum ditambahkan.')}</p>
         </article>
         <article class="value-card">
           <span class="value-number">03</span>
-          <h3>Pengembangan Produk</h3>
-          <p>Informasi pengembangan produk briket biocarbon kelompok.</p>
+          <h3>Misi</h3>
+          <p>${missions.length ? missions.map(escapeHtml).join('<br>') : 'Informasi misi kelompok belum ditambahkan.'}</p>
         </article>
       </div>
     </section>
@@ -69,43 +137,52 @@ export function Profile() {
       <div>
         <span class="eyebrow">DOKUMENTASI</span>
         <h2>Kegiatan <span>Kelompok</span></h2>
-        <p>
-          Dokumentasi aktivitas nyata Kelompok Tani Ternak
-          Mekar Sari 1.
-        </p>
+        <p>Dokumentasi aktivitas nyata ${escapeHtml(name)}.</p>
       </div>
       <div class="activity-gallery">
-        <div class="activity-item">
-          <img src="/images/kegiatan-1.jpg" alt="Kegiatan kelompok 1"
-            onerror="this.style.display='none'">
-        </div>
-        <div class="activity-item">
-          <img src="/images/kegiatan-2.jpg" alt="Kegiatan kelompok 2"
-            onerror="this.style.display='none'">
-        </div>
-        <div class="activity-item">
-          <img src="/images/kegiatan-3.jpg" alt="Kegiatan kelompok 3"
-            onerror="this.style.display='none'">
-        </div>
+        ${
+          documents.length
+            ? documents.map((item) => `
+  <article class="activity-item">
+    <img
+      src="${escapeHtml(item.image_url)}"
+      alt="${escapeHtml(item.title)}"
+    >
+
+    <div class="activity-caption">
+      <strong>${escapeHtml(item.title)}</strong>
+
+      ${
+        item.description
+          ? `<p>${escapeHtml(limitWords(item.description, 20))}</p>`
+          : ''
+      }
+
+      <a
+        href="/dokumentasi/${encodeURIComponent(item.id)}"
+        data-link
+        class="text-link"
+      >
+        Baca selengkapnya →
+      </a>
+    </div>
+  </article>
+`).join('')
+            : `<p class="data-note">Dokumentasi kegiatan belum ditambahkan.</p>`
+        }
       </div>
-      <p class="data-note">
-        Dokumentasi akan diisi menggunakan foto asli dari mitra.
-      </p>
     </section>
 
     <section class="profile-location">
       <div>
         <span class="eyebrow">LOKASI KELOMPOK</span>
         <h2>Temukan <span>lokasi kami.</span></h2>
-        <p>
-          Kelurahan Mangunsari, Kecamatan Gunungpati,
-          Kota Semarang, Jawa Tengah.
-        </p>
+        <p>${escapeHtml(address)}</p>
       </div>
       <div class="location-card">
         <span>📍</span>
-        <h3>Mekar Sari 1</h3>
-        <p>Mangunsari, Gunungpati, Semarang</p>
+        <h3>${escapeHtml(name)}</h3>
+        <p>${escapeHtml(address)}</p>
       </div>
     </section>
   `;
