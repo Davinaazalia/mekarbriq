@@ -104,7 +104,7 @@ export async function Education(): Promise<string> {
                     </span>
                     <h3>${escapeHtml(topic.title)}</h3>
                     <p>${escapeHtml(limitWords(topic.content, 32))}</p>
-                    <a href="/edukasi/${topic.id}" class="text-link">
+                    <a href="/mekarbriq/edukasi/${encodeURIComponent(topic.id)}" class="text-link">
                     Baca selengkapnya →
                     </a>
                   </div>

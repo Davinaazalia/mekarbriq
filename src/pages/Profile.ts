@@ -159,7 +159,7 @@ export async function Profile(): Promise<string> {
       }
 
       <a
-        href="/dokumentasi/${encodeURIComponent(item.id)}"
+        href="/mekarbrik/dokumentasi/${encodeURIComponent(item.id)}"
         data-link
         class="text-link"
       >
