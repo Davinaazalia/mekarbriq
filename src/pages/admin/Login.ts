@@ -76,7 +76,7 @@ export function AdminLogin(): string { return `
 <form id="admin-login-form"><label for="admin-email">Email admin</label><input type="email" id="admin-email" placeholder="Masukkan email" required>
 <label for="admin-password">Password</label><input type="password" id="admin-password" placeholder="Masukkan password" required>
 <p id="login-error" class="login-error" role="alert"></p><button type="submit" class="btn-primary" id="login-submit">Masuk Dashboard →</button></form>
-<a href="/" class="back-home">← Kembali ke website</a></div></section>`; }
+<a href="/mekarbriq/" class="back-home">← Kembali ke website</a></div></section>`; }
 export function setupAdminLogin(): void {
  const form=document.querySelector<HTMLFormElement>('#admin-login-form'); if(!form)return;
  form.addEventListener('submit',async e=>{ e.preventDefault();
@@ -95,9 +95,9 @@ if (error) {
   msg.textContent = error.message;
 
   btn.disabled = false;
-  btn.textContent = 'Masuk Dashboard →';
+  btn.textContent = 'Masuk Dashboard';
   return;
 }
-  window.location.href='/admin';
+  window.location.href = '/mekarbriq/admin';
  });
 }
